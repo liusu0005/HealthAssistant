@@ -46,22 +46,12 @@ retrieval_chain = (
     | StrOutputParser()
 )
 
-def call_chat(question, user_id):
-    user_data = get_user_data(user_id)
-    if not user_data:
-        raise ValueError("User data not found")
-
-    # Add user data to the prompt context
-    user_context = f"Patient Info:\nName: {user_data['name']}, Age: {user_data['age']}, Gender: {user_data['gender']}, Diagnosis: {user_data['diagnosis']}\n\n"
-    
-    # Append user context to the question
-    full_prompt = user_context + question
-
+def call_chat(question):
     answer = ""
-    for chunk in retrieval_chain.stream(full_prompt):
+    for chunk in retrieval_chain.stream(question):
         answer += chunk
         yield {"token": chunk}
 
-    chat_message = ChatMessage(user_id=user_id, question=question, answer=answer)
+    chat_message = ChatMessage(user_id=1, question=question, answer=answer)
     db.session.add(chat_message)
     db.session.commit()

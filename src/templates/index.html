@@ -15,16 +15,23 @@
 </head>
 <body>
     <main class="h-100 mh-100 d-flex flex-column overflow-hidden justify-content-start">
-        <h1 class="display-5">Welcome to {{demo_name}}!</h1>
-        <div id="patient-id-form">
-            <form id="patient-form">
-                <label for="user_id" class="form-label">Enter your Patient ID:</label>
-                <input id="user_id" name="user_id" class="form-control" type="text" required>
-                <button type="submit" class="btn btn-primary mt-2">Submit</button>
-            </form>
-        </div>
-
+        <h1 class="display-5">Welcome to {{demo_name}} Demo!</h1>
         <div id="messages" class="px-4 pb-4 pt-2 flex-grow-1 overflow-y-auto overflow-x-hidden align-items-stretch">
+            <!-- Greeting Message from Assistant -->
+            <div class="toast-container position-static w-100 d-flex flex-column align-items-stretch">
+                <div class="toast fade show w-75 rounded-3 align-self-start">
+                    <div class="toast-header text-light background-assistant">
+                        <i class="bi bi-robot me-1" aria-hidden="true"></i>
+                        <strong class="me-auto text-capitalize">
+                            Bobby
+                        </strong>
+                    </div>
+                    <div class="toast-body message-content">
+                        {{ greeting_message }}
+                    </div>
+                </div>
+            </div>
+
             <template id="message-template-user">
                 <div class="toast-container position-static w-100 d-flex flex-column align-items-stretch">
                     <div class="toast fade show w-75 rounded-3 align-self-end">
@@ -46,7 +53,7 @@
                         <div class="toast-header text-light background-assistant">
                             <i class="bi bi-robot me-1" aria-hidden="true"></i>
                             <strong class="me-auto text-capitalize">
-                                Assistant
+                                Bobby
                             </strong>
                         </div>
                         <div class="toast-body message-content">
@@ -72,89 +79,14 @@
     <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ndjson-readablestream@1.0.1/dist/ndjson-readablestream.umd.js"></script>
     <script>
-        const userIdInput = document.getElementById("user_id")
-        const patientForm = document.getElementById("patient-form");
-        const chatForm = document.getElementById("chat-form");
+        const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
         const targetContainer = document.getElementById("messages");
         const userTemplate = document.querySelector('#message-template-user');
         const assistantTemplate = document.querySelector('#message-template-assistant');
         const converter = new showdown.Converter();
 
-        let patientId = null;
-
-        const messagesContainer = document.getElementById("messages");
-
-        // Function to Append Assistant Messages Using the Template
-        function appendAssistantMessage(message) {
-            const assistantMessage = document.createElement("div");
-            assistantMessage.innerHTML = `
-                <div class="toast-container position-static w-100 d-flex flex-column align-items-stretch">
-                    <div class="toast fade show w-75 rounded-3 align-self-start">
-                        <div class="toast-header text-light background-assistant">
-                            <i class="bi bi-robot me-1" aria-hidden="true"></i>
-                            <strong class="me-auto text-capitalize">Assistant</strong>
-                        </div>
-                        <div class="toast-body message-content">${message}</div>
-                    </div>
-                </div>`;
-            messagesContainer.appendChild(assistantMessage);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll
-        }
-
-        // Function to Fetch User Data from Backend
-        async function fetchUserData(userId) {
-            try {
-                const response = await fetch(`/user/${userId}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (response.ok) {
-                    const userData = await response.json();
-                    console.log("User Data:", userData);
-
-                    // Display the assistant's response with the user data
-                    appendAssistantMessage(`Here is your information:
-                    Name: ${userData.name}
-                    Age: ${userData.age}
-                    Gender: ${userData.gender}
-                    Blood Pressure: ${userData.blood_pressure_high}/${userData.blood_pressure_low}
-                    BMI: ${userData.BMI}
-                    Weight: ${userData.weight} kg
-                    Height: ${userData.height} cm
-                    Temperature: ${userData.temperature} °F
-                    Pulse: ${userData.pulse} bpm
-                    Oxygen Saturation: ${userData.oxygen_saturation}%
-                    Diagnosis: ${userData.diagnosis}
-                    Medical History: ${userData.history}
-                    Drinks Wine: ${userData.drink_wine}
-                    Smokes: ${userData.smoke}
-                    Uses Drugs: ${userData.drug}`);
-                } else {
-                    const error = await response.json();
-                    appendAssistantMessage(error.error || "Failed to retrieve user data.");
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                appendAssistantMessage("An unexpected error occurred. Please try again.");
-            }
-        }
-
-        // Handle Patient ID Form Submission
-        patientForm.addEventListener("submit", function (e) {
-            e.preventDefault();
-            const userId = userIdInput.value.trim(); // Get user ID from input
-            if (!userId) {
-                appendAssistantMessage("Please enter a valid Patient ID.");
-                return;
-            }
-
-            console.log("Fetching data for User ID:", userId);
-            fetchUserData(userId); // Call the fetch function with the user ID
-        });
-
-        chatForm.addEventListener("submit", async function(e) {
+        form.addEventListener("submit", async function(e) {
             e.preventDefault();
             const message = messageInput.value;
             messageInput.value = "";
